@@ -1,0 +1,39 @@
+
+library(httr)
+library(jsonlite)
+library(lubridate)
+library(XML)
+library(xml2)
+
+#Forms
+url  <- "https://api.repsly.com"
+path <- "/v3/export/forms/0"
+username <- "xx"
+password <- "xx"
+raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+library(jsonlite)
+
+query <- httr::content(raw.result, as="raw")
+json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+df.test <- flatten(as.data.frame(json))
+
+total <- merge(df.test$Forms.Items, df.test$Forms.VisitID)
+dat <- df.test$Forms.Items
+
+newtest<- as.data.frame(test[1], test[2])
+
+test<-rbind(df.test$Forms.Items, df.test$Forms.VisitID)
+
+merged.data.frame = Reduce(function(...) merge(..., all=T), list.of.data.frames)
+
+
+test<-rbind(test$field)
+
+df.test2 <- flatten(as.data.frame(test), recursive = FASLE)
+simplifyMatrix(df.test2)
+
+sapply(df.test$Forms.Items)
+
+DomoR::init('dsisystemsinc', '581fc079d6b1c1123acbc998588113c22126d8e9903d0a5d')
+DomoR::create(df.test2, name="Repsly_test", description="connection to Repsly api for details")
+
