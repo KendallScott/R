@@ -1,0 +1,35 @@
+
+library(httr)
+library(jsonlite)
+library(lubridate)
+library(XML)
+library(xml2)
+
+#Forms
+url  <- "https://api.repsly.com"
+path <- "/v3/export/forms/0"
+username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+library(jsonlite)
+
+query <- httr::content(raw.result, as="raw")
+json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+df.test <- flatten(as.data.frame(json))
+
+total <- merge(df.test$Forms.Items, df.test$Forms.VisitID)
+dat <- df.test$Forms.Items
+
+newtest<- as.data.frame(test[1], test[2])
+
+test<-rbind(df.test$Forms.Items, df.test$Forms.VisitID)
+
+merged.data.frame = Reduce(function(...) merge(..., all=T), list.of.data.frames)
+
+
+test<-rbind(test$field)
+
+df.test2 <- flatten(as.data.frame(test), recursive = FASLE)
+simplifyMatrix(df.test2)
+
+sapply(df.test$Forms.Items)
