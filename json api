@@ -4,32 +4,68 @@ library(jsonlite)
 library(lubridate)
 library(XML)
 library(xml2)
-
+library(jsonlite)
+library(dplyr)
 #Forms
 url  <- "https://api.repsly.com"
 path <- "/v3/export/forms/0"
-username <- "443FF361-805F-4006-A91C-D7721D232D9C"
-password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+username <- "x"
+password <- "x"
 raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
-library(jsonlite)
 
 query <- httr::content(raw.result, as="raw")
 json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
-df.test <- flatten(as.data.frame(json))
 
-total <- merge(df.test$Forms.Items, df.test$Forms.VisitID)
-dat <- df.test$Forms.Items
+df <- flatten(as.data.frame(json[2]))
 
-newtest<- as.data.frame(test[1], test[2])
+while (LastId>0) {
+  url  <- "https://api.repsly.com"
+  path <-gsub(" ", "", path)
+  username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+  password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+  raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+  
+  query <- httr::content(raw.result, as="raw")
+  json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+  df2 <- flatten(as.data.frame(json))
+  LastId <-min(df2$MetaCollectionResult.LastID)
+  path <- paste("/v3/export/forms/",LastId)
+  
+  df <- rbind(df2, df)
+}
 
-test<-rbind(df.test$Forms.Items, df.test$Forms.VisitID)
+df<- df %>% 
+  filter(Forms.FormName != "RM Ride Along" )
+df<- df %>% 
+  filter(Forms.FormName != "RM Ride Behind")
+df<- df %>% 
+  filter( Forms.FormName != "Best Buy Prepaid")
+df<- df %>% 
+  filter( Forms.FormName != "RM Weekly Feedback")
+df<- df %>% 
+  filter( Forms.FormName != "Prepaid Sales Walmart")
+df<- df %>% 
+  filter( Forms.FormName != "PrePaid Sales Best Buy")
 
-merged.data.frame = Reduce(function(...) merge(..., all=T), list.of.data.frames)
+df$DateandTime <- as.POSIXct(df$DateandTime,tz=Sys.timezone())
 
+df$new <-gsub(pattern= "/Date", replacement="", df$DateandTime)
+df$DateandTime <-gsub(pattern= ")/", replacement="", df$DateandTime)
+df$newdate <- as.Date(df$DateandTime)
+df <-df[df[["newdate"]] >= "2019-07-15", ]
 
-test<-rbind(test$field)
+x <- 1
+df.org <- cbind(df[[26]][[x]], df[[4]][[x]], df[[5]][[x]], df[[10]][[x]])
+while (x<NROW(df)) {
+x<-x+1
+df2.org <- cbind(df[[26]][[x]], df[[4]][[x]], df[[5]][[x]], df[[10]][[x]])
+df.org <- rbind(df.org, df2.org)
+}
+names(df.org) <- c("Field", "Value", "FormID", "Formname", "Createdby")
+df.org <- distinct(df.org, .keep_all = FALSE)
 
-df.test2 <- flatten(as.data.frame(test), recursive = FASLE)
-simplifyMatrix(df.test2)
+org <- DomoR::fetch('fa68b0b6-cb53-4b8b-8f51-fcd9ce6d0980')
+col.names <-df %>% distinct( df$Forms.FormName)
 
-sapply(df.test$Forms.Items)
+DomoR::init('x', 'x')
+DomoR::replace_ds('x', df.org)
