@@ -1,4 +1,3 @@
-
 library(httr)
 library(jsonlite)
 library(lubridate)
@@ -9,14 +8,18 @@ library(dplyr)
 #Forms
 url  <- "https://api.repsly.com"
 path <- "/v3/export/forms/0"
-username <- "x"
-password <- "x"
+username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
 raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
 
 query <- httr::content(raw.result, as="raw")
 json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
 
-df <- flatten(as.data.frame(json[2]))
+df <- flatten(as.data.frame(json))
+dftest <- do.call("c", df[[df$Forms.Items]])
+
+
+dftest <- flatten(df)
 
 while (LastId>0) {
   url  <- "https://api.repsly.com"
@@ -24,9 +27,9 @@ while (LastId>0) {
   username <- "443FF361-805F-4006-A91C-D7721D232D9C"
   password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
   raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
-  
   query <- httr::content(raw.result, as="raw")
   json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+
   df2 <- flatten(as.data.frame(json))
   LastId <-min(df2$MetaCollectionResult.LastID)
   path <- paste("/v3/export/forms/",LastId)
@@ -47,25 +50,41 @@ df<- df %>%
 df<- df %>% 
   filter( Forms.FormName != "PrePaid Sales Best Buy")
 
-df$DateandTime <- as.POSIXct(df$DateandTime,tz=Sys.timezone())
-
-df$new <-gsub(pattern= "/Date", replacement="", df$DateandTime)
-df$DateandTime <-gsub(pattern= ")/", replacement="", df$DateandTime)
-df$newdate <- as.Date(df$DateandTime)
-df <-df[df[["newdate"]] >= "2019-07-15", ]
 
 x <- 1
-df.org <- cbind(df[[26]][[x]], df[[4]][[x]], df[[5]][[x]], df[[10]][[x]])
+df.org <- cbind(df[[26]][[x]], df[[4]][[x]])
+transpose <- t(df.org)
 while (x<NROW(df)) {
 x<-x+1
-df2.org <- cbind(df[[26]][[x]], df[[4]][[x]], df[[5]][[x]], df[[10]][[x]])
+df2.org <- cbind(df[[26]][[x]], df[[4]][[x]])
 df.org <- rbind(df.org, df2.org)
 }
+
+df.orgnames <- unique(df.org$Field)
+transpose <- t(df.orgnames)
+
+x<-1
+QA <- subset(df.org, df.org$Field %in% df.orgnames[x])
+columnname <-toString(unique(QA[x]))
+QA <-QA[ ,2:3]
+colnames<-list(columnname, 'FormID')
+names(QA)<-c(colnames)
+
+  while (x<NROW(df.org)) {
+  x<-x+1
+  QA2 <- subset(df.org, df.org$Field %in% df.orgnames[x])
+  columnname <-toString(unique(QA[x]))
+  QA2 <-QA2[ ,2:3]
+  colnames<-list(columnname, 'FormID')
+  names(QA2)<-c(colnames)
+  cbind(QA, QA2)
+  }
+
+
 names(df.org) <- c("Field", "Value", "FormID", "Formname", "Createdby")
-df.org <- distinct(df.org, .keep_all = FALSE)
+
 
 org <- DomoR::fetch('fa68b0b6-cb53-4b8b-8f51-fcd9ce6d0980')
-col.names <-df %>% distinct( df$Forms.FormName)
 
 DomoR::init('x', 'x')
-DomoR::replace_ds('x', df.org)
+DomoR::replace_ds('x', x)
