@@ -1,0 +1,80 @@
+library(httr)
+library(jsonlite)
+library(lubridate)
+library(XML)
+library(xml2)
+library(jsonlite)
+library(dplyr)
+#Forms
+url  <- "https://api.repsly.com"
+path <- "/v3/export/forms/0"
+username <- "x"
+password <- "x"
+raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+
+query <- httr::content(raw.result, as="raw")
+json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+df <- flatten(as.data.frame(json))
+
+while (LastId>0) {
+  url  <- "https://api.repsly.com"
+  path <-gsub(" ", "", path)
+  username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+  password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+  raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+  query <- httr::content(raw.result, as="raw")
+  json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+
+  df2 <- flatten(as.data.frame(json))
+  LastId <-min(df2$MetaCollectionResult.LastID)
+  path <- paste("/v3/export/forms/",LastId)
+  
+  df <- rbind(df2, df)
+}
+
+df<- df %>% 
+  filter(Forms.FormName != "RM Ride Along" )
+df<- df %>% 
+  filter(Forms.FormName != "RM Ride Behind")
+df<- df %>% 
+  filter( Forms.FormName != "Best Buy Prepaid")
+df<- df %>% 
+  filter( Forms.FormName != "RM Weekly Feedback")
+df<- df %>% 
+  filter( Forms.FormName != "Prepaid Sales Walmart")
+df<- df %>% 
+  filter( Forms.FormName != "PrePaid Sales Best Buy")
+
+x <- 1
+df.org <- cbind(df[[26]][[x]], df[[4]][[x]])
+transpose <- t(df.org)
+while (x<NROW(df)) {
+x<-x+1
+df2.org <- cbind(df[[26]][[x]], df[[4]][[x]])
+df.org <- rbind(df.org, df2.org)
+}
+
+df.org <-filter(df.org, df.org$Value != {""})
+
+df.orgnames <- unique(df.org$Field)
+
+x<-1
+QA <- subset(df.org, df.org$Field %in% df.orgnames[x])
+columnname <-toString(unique(QA[x]))
+QA <-QA[ ,2:3]
+colnames<-list(columnname, 'FormID')
+names(QA)<-c(colnames)
+
+while (x<NROW(df.orgnames)) {
+  x<-x+1
+  QA2 <- subset(df.org, df.org$Field %in% df.orgnames[x])
+  columnname <-toString(unique(df.orgnames[x]))
+  QA2 <-QA2[ ,2:3]
+  colnames<-list(columnname, 'FormID')
+  names(QA2)<-c(colnames)
+  QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
+  }
+
+
+DomoR::init('x', 'x')
+DomoR::replace_ds('x', df.org)
