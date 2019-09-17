@@ -4,8 +4,8 @@ library(dplyr)
 #Forms
 url  <- "https://api.repsly.com"
 path <- "/v3/export/forms/0"
-username <- "443FF361-805F-4006-A91C-D7721D232D9C"
-password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+username <- "s
+password <- "s"
 raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
 
 query <- httr::content(raw.result, as="raw")
@@ -15,12 +15,12 @@ df <- flatten(as.data.frame(json))
 while (LastId>0) {
   url  <- "https://api.repsly.com"
   path <-gsub(" ", "", path)
-  username <- "x"
-  password <- "x"
+  username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+  password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
   raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
   query <- httr::content(raw.result, as="raw")
   json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
-
+  
   df2 <- flatten(as.data.frame(json))
   LastId <-min(df2$MetaCollectionResult.LastID)
   path <- paste("/v3/export/forms/",LastId)
@@ -28,16 +28,15 @@ while (LastId>0) {
   df <- rbind(df2, df)
 }
 
-df<- df %>% 
+df.Storevisit<- df %>% 
   filter(Forms.FormName == "Store Visit" )
 
 x <- 1
-df.org <- cbind(df[[26]][[x]], df[[4]][[x]])
-transpose <- t(df.org)
-while (x<NROW(df)) {
-x<-x+1
-df2.org <- cbind(df[[26]][[x]], df[[4]][[x]])
-df.org <- rbind(df.org, df2.org)
+df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
+while (x<NROW(df.Storevisit)) {
+  x<-x+1
+  df2.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
+  df.org <- rbind(df.org, df2.org)
 }
 
 df.org <-filter(df.org, df.org$Value != {""})
@@ -59,8 +58,16 @@ while (x<y) {
   colnames<-list(columnname, 'FormID')
   names(QA2)<-c(colnames)
   QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
-  }
+}
 
+DomoR::init('dsisystemsinc', '581fc079d6b1c1123acbc998588113c22126d8e9903d0a5d')
+org <-DomoR::fetch('efa0feb0-1e03-4b1e-ba1e-f7ebddf68f38')
 
-DomoR::init('x', 'x')
-DomoR::replace_ds('x', QA)
+forms <-DomoR::fetch('e3620ccd-4258-4224-ab1d-1c256774d278')
+forms.detail<-merge(x=QA, y=forms, by.x="FormID", by.y="FormID")
+
+Forms.with.detail <-merge(x=forms.detail, y=org, by.x="RepresentativeName", by.y="FSR")
+
+Forms.with.detail$Retailer <- gsub(pattern= "#.*", replacement="", Forms.with.detail$ClientName)
+
+DomoR::replace_ds('s', Forms.with.detail)
