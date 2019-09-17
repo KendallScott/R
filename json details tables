@@ -1,15 +1,11 @@
 library(httr)
 library(jsonlite)
-library(lubridate)
-library(XML)
-library(xml2)
-library(jsonlite)
 library(dplyr)
 #Forms
 url  <- "https://api.repsly.com"
 path <- "/v3/export/forms/0"
-username <- "x"
-password <- "x"
+username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
 raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
 
 query <- httr::content(raw.result, as="raw")
@@ -19,8 +15,8 @@ df <- flatten(as.data.frame(json))
 while (LastId>0) {
   url  <- "https://api.repsly.com"
   path <-gsub(" ", "", path)
-  username <- "443FF361-805F-4006-A91C-D7721D232D9C"
-  password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+  username <- "x"
+  password <- "x"
   raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
   query <- httr::content(raw.result, as="raw")
   json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
@@ -33,17 +29,7 @@ while (LastId>0) {
 }
 
 df<- df %>% 
-  filter(Forms.FormName != "RM Ride Along" )
-df<- df %>% 
-  filter(Forms.FormName != "RM Ride Behind")
-df<- df %>% 
-  filter( Forms.FormName != "Best Buy Prepaid")
-df<- df %>% 
-  filter( Forms.FormName != "RM Weekly Feedback")
-df<- df %>% 
-  filter( Forms.FormName != "Prepaid Sales Walmart")
-df<- df %>% 
-  filter( Forms.FormName != "PrePaid Sales Best Buy")
+  filter(Forms.FormName == "Store Visit" )
 
 x <- 1
 df.org <- cbind(df[[26]][[x]], df[[4]][[x]])
@@ -55,17 +41,17 @@ df.org <- rbind(df.org, df2.org)
 }
 
 df.org <-filter(df.org, df.org$Value != {""})
-
 df.orgnames <- unique(df.org$Field)
 
 x<-1
+y<-NROW(df.orgnames)
 QA <- subset(df.org, df.org$Field %in% df.orgnames[x])
 columnname <-toString(unique(QA[x]))
 QA <-QA[ ,2:3]
 colnames<-list(columnname, 'FormID')
 names(QA)<-c(colnames)
 
-while (x<NROW(df.orgnames)) {
+while (x<y) {
   x<-x+1
   QA2 <- subset(df.org, df.org$Field %in% df.orgnames[x])
   columnname <-toString(unique(df.orgnames[x]))
@@ -77,4 +63,4 @@ while (x<NROW(df.orgnames)) {
 
 
 DomoR::init('x', 'x')
-DomoR::replace_ds('x', df.org)
+DomoR::replace_ds('x', QA)
