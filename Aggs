@@ -1,0 +1,24 @@
+library(dplyr)
+DomoR::init('x', 'x')
+Net.Activations <- DomoR::fetch("99ef4a65-f48c-473e-96a3-397915c22b50")
+Dates <- DomoR::fetch("852e96f9-9f3b-46bb-9dd8-1c66401e2011")
+
+Net.Activations <- Net.Activations %>% 
+  filter(Net.Activations$Product_Category == "WIRELESS" & Net.Activations$Product_Desc=="VOICE"| Net.Activations$Product_Desc=="UNK")
+Net.Activations$NewDate <- as.Date(Net.Activations$Date, "%d-%b-%y")
+Net.Activations$Year <- format(Net.Activations$NewDate, "%Y")
+Net.Activations$Activations[is.na(Net.Activations$Activations)] <- 0
+Net.Activations$Disconnects[is.na(Net.Activations$Disconnects)] <- 0
+
+TY.Last.day <-max(Dates$YTD.end.date)
+TY.Start.day <-max(Dates$YTD.start.date)
+
+Net.Activations.update <- Net.Activations %>%
+  select(MasterDealer, StoreNo, Store, Date, Activations, Disconnects)
+Net.Activations.update <- Net.Activations.update %>% group_by(MasterDealer, Store,StoreNo, Date) %>% summarise_all(sum)
+
+Net.Activations.LY <- Net.Activations.update[which(Net.Activations.update$Date > Dates$LY.start.date & Net.Activations$Date < Dates$LY.end.date ),names(Net.Activations.update) %in% c("MasterDealer","StoreNo","Activations", "Disconnects", "Store")]
+Net.Activations.YTD <- Net.Activations.update[which(Net.Activations.update$Date > TY.Start.day & Net.Activations.update$Date < TY.Last.day ),names(Net.Activations.update) %in% c("MasterDealer","StoreNo","Activations", "Disconnects", "Net", "Store")]
+
+Net.Activations.YTD.sum <- Net.Activations.YTD %>% group_by(MasterDealer, Store, StoreNo) %>% summarise_all(sum)
+write.csv(Net.Activations.YTD.sum,'test.csv')
