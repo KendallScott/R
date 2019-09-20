@@ -1,5 +1,5 @@
 library(dplyr)
-DomoR::init('dsisystemsinc', 'x')
+DomoR::init('x', 'x')
 Net.Activations <- DomoR::fetch("99ef4a65-f48c-473e-96a3-397915c22b50")
 Dates <- DomoR::fetch("852e96f9-9f3b-46bb-9dd8-1c66401e2011")
 YoY <- DomoR::fetch("eb329818-5898-4802-bb4a-87fd441c7e57")
@@ -55,6 +55,10 @@ YoY.Summary$YoY.Diff <- YoY.Summary$YTD.Net - YoY.Summary$LY.Net
 #write.csv(YoY.Summary,'YoY.csv')
 
 YoY.update<-merge(x=YoY.Summary,y=YoY,by.x='Store', by.y='Store.Name',all=TRUE)
+YoY.update$DSI.District <- toString(YoY.update$DSI.District)
+
+#DomoR::create(YoY.Summary, name="YoY_Summary", description="YoY totals by Store YTD vs. LY")
+DomoR::replace_ds('b10d3191-2262-4197-afb0-b6d99a97e084', YoY.Summary)
 
 #DomoR::create(YoY.update, name="YoY_update", description="YoY totals by Store YTD vs. LY")
 DomoR::replace_ds('284d2fff-6fad-43de-859a-3b021a910520', YoY.update)
