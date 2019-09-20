@@ -1,0 +1,130 @@
+library(httr)
+library(jsonlite)
+library(dplyr)
+#Forms
+url  <- "https://api.repsly.com"
+path <- "/v3/export/forms/0"
+username <- "x"
+password <- "x"
+raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+
+query <- httr::content(raw.result, as="raw")
+json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+df <- flatten(as.data.frame(json))
+
+while (LastId>0) {
+  url  <- "https://api.repsly.com"
+  path <-gsub(" ", "", path)
+  username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+  password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+  raw.result <- GET(url = url, path=path, authenticate(username,  password, type ="basic"), accept_json())
+  query <- httr::content(raw.result, as="raw")
+  json <- jsonlite::fromJSON(rawToChar(query), simplifyDataFrame = TRUE)
+
+  df2 <- flatten(as.data.frame(json))
+  LastId <-min(df2$MetaCollectionResult.LastID)
+  path <- paste("/v3/export/forms/",LastId)
+  
+  df <- rbind(df2, df)
+}
+
+df.Storevisit<- df %>% 
+  filter(Forms.FormName == "Store Visit" )
+
+x <- 1
+df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
+while (x<NROW(df.Storevisit)) {
+x<-x+1
+df2.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
+df.org <- rbind(df.org, df2.org)
+}
+
+df.org <-filter(df.org, df.org$Value != {""})
+df.orgnames <- unique(df.org$Field)
+
+x<-1
+y<-NROW(df.orgnames)
+QA <- subset(df.org, df.org$Field %in% df.orgnames[x])
+columnname <-toString(unique(QA[x]))
+QA <-QA[ ,2:3]
+colnames<-list(columnname, 'FormID')
+names(QA)<-c(colnames)
+
+while (x<y) {
+  x<-x+1
+  QA2 <- subset(df.org, df.org$Field %in% df.orgnames[x])
+  columnname <-toString(unique(df.orgnames[x]))
+  QA2 <-QA2[ ,2:3]
+  colnames<-list(columnname, 'FormID')
+  names(QA2)<-c(colnames)
+  QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
+  }
+
+DomoR::init('x', 'x')
+DomoR:Fetch('efa0feb0-1e03-4b1e-ba1e-f7ebddf68f38')
+DomoR::replace_ds('d0f1f01e-d1e4-4ce9-98a8-25315d80bbcd', QA)
+
+df.NRTraining<- df %>% 
+  filter(Forms.FormName == "National Retail Training" )
+x <- 1
+df.org <- cbind(df.NRTraining[[26]][[x]], df.NRTraining[[4]][[x]])
+while (x<NROW(df.NRTraining)) {
+  x<-x+1
+  df2.org <- cbind(df.NRTraining[[26]][[x]], df.NRTraining[[4]][[x]])
+  df.org <- rbind(df.org, df2.org)
+}
+df.org <-filter(df.org, df.org$Value != {""})
+df.orgnames <- unique(df.org$Field)
+
+x<-1
+y<-NROW(df.orgnames)
+QA <- subset(df.org, df.org$Field %in% df.orgnames[x])
+columnname <-toString(unique(QA[x]))
+QA <-QA[ ,2:3]
+colnames<-list(columnname, 'FormID')
+names(QA)<-c(colnames)
+
+while (x<y) {
+  x<-x+1
+  QA2 <- subset(df.org, df.org$Field %in% df.orgnames[x])
+  columnname <-toString(unique(df.orgnames[x]))
+  QA2 <-QA2[ ,2:3]
+  colnames<-list(columnname, 'FormID')
+  names(QA2)<-c(colnames)
+  QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
+}
+
+DomoR::replace_ds('e59a4959-efa3-4b78-87c9-acaafd8a0098', QA)
+
+df.NSPTraining<- df %>% 
+  filter(Forms.FormName == "NSP Training" )
+
+x <- 1
+df.org <- cbind(df.NSPTraining[[26]][[x]], df.NSPTraining[[4]][[x]])
+while (x<NROW(df.NSPTraining)) {
+  x<-x+1
+  df2.org <- cbind(df.NSPTraining[[26]][[x]], df.NSPTraining[[4]][[x]])
+  df.org <- rbind(df.org, df2.org)
+}
+df.org <-filter(df.org, df.org$Value != {""})
+df.orgnames <- unique(df.org$Field)
+
+x<-1
+y<-NROW(df.orgnames)
+QA <- subset(df.org, df.org$Field %in% df.orgnames[x])
+columnname <-toString(unique(QA[x]))
+QA <-QA[ ,2:3]
+colnames<-list(columnname, 'FormID')
+names(QA)<-c(colnames)
+
+while (x<y) {
+  x<-x+1
+  QA2 <- subset(df.org, df.org$Field %in% df.orgnames[x])
+  columnname <-toString(unique(df.orgnames[x]))
+  QA2 <-QA2[ ,2:3]
+  colnames<-list(columnname, 'FormID')
+  names(QA2)<-c(colnames)
+  QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
+}
+
+DomoR::replace_ds('38c8da3f-ea7b-43d3-9cab-b15902003f42', QA)
