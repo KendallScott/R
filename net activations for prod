@@ -1,0 +1,63 @@
+library(dplyr)
+DomoR::init('dsisystemsinc', '5028012cff986301c09bac82c36ec47705798592c29408d7')
+Net.Activations <- DomoR::fetch("99ef4a65-f48c-473e-96a3-397915c22b50")
+Dates <- DomoR::fetch("852e96f9-9f3b-46bb-9dd8-1c66401e2011")
+YoY <- DomoR::fetch("eb329818-5898-4802-bb4a-87fd441c7e57")
+
+YoY <- YoY %>% 
+  filter(YoY$Product_Category == "WIRELESS")
+
+Net.Activations <- Net.Activations %>% 
+  filter(Net.Activations$Product_Category == "WIRELESS" & Net.Activations$Product_Desc=="VOICE" | Net.Activations$Product_Desc=="UNK"  )
+Net.Activations$NewDate <- as.Date(Net.Activations$Date, "%d-%b-%y")
+Net.Activations$Year <- format(Net.Activations$NewDate, "%Y")
+Net.Activations$Activations[is.na(Net.Activations$Activations)] <- 0
+Net.Activations$Disconnects[is.na(Net.Activations$Disconnects)] <- 0
+
+TY.Last.day <-max(Dates$YTD.end.date)+1
+TY.Start.day <-max(Dates$YTD.start.date)-1
+LY.Last.day <-max(Dates$LY.end.date)+1
+LY.Start.day <-max(Dates$LY.start.date)-1
+
+Net.Activations.update <- Net.Activations %>%
+  select(MasterDealer, StoreNo, Store, Date, Activations, Disconnects)
+Net.Activations.update <- Net.Activations.update %>% group_by(MasterDealer, Store,StoreNo, Date) %>% summarise_all(sum)
+
+Net.Activations.LY  <- Net.Activations.update[which(Net.Activations.update$Date > LY.Start.day & Net.Activations.update$Date < LY.Last.day ),names(Net.Activations.update) %in% c("MasterDealer","StoreNo","Activations", "Disconnects", "Store")]
+Net.Activations.YTD <- Net.Activations.update[which(Net.Activations.update$Date > TY.Start.day & Net.Activations.update$Date < TY.Last.day ),names(Net.Activations.update) %in% c("MasterDealer","StoreNo","Activations", "Disconnects", "Net", "Store")]
+
+Net.Activations.YTD.sum <- Net.Activations.YTD %>% group_by(MasterDealer, Store, StoreNo) %>% summarise_all(sum)
+Net.Activations.LY.sum  <- Net.Activations.LY  %>% group_by(MasterDealer, Store, StoreNo) %>% summarise_all(sum)
+
+Net.Activations.YTD.sum$Net <- Net.Activations.YTD.sum$Activations-Net.Activations.YTD.sum$Disconnects
+Net.Activations.LY.sum$Net  <- Net.Activations.LY.sum$Activations-Net.Activations.LY.sum$Disconnects
+
+YTDcolnames<-list( 'MasterDealer', 'Store', 'StoreNo', 'YTD.GA', 'YTD.Disconnects', 'YTD.Net')
+names(Net.Activations.YTD.sum)<-c(YTDcolnames)
+LYcolnames<-list( 'MasterDealer', 'Store', 'StoreNo', 'LY.GA', 'LY.Disconnects', 'LY.Net')
+names(Net.Activations.LY.sum)<-c(LYcolnames)
+
+YoY.Summary<-merge(x=Net.Activations.LY.sum,y=Net.Activations.YTD.sum,by='Store',all=TRUE)
+
+YoY.Summary$MasterDealer<-coalesce(YoY.Summary$MasterDealer.x, YoY.Summary$MasterDealer.y )
+YoY.Summary$StoreNo<-coalesce(YoY.Summary$StoreNo.x, YoY.Summary$StoreNo.y)
+YoY.Summary <- YoY.Summary %>%
+select(MasterDealer, StoreNo, Store, LY.GA, LY.Disconnects, LY.Net, YTD.GA, YTD.Disconnects, YTD.Net)
+
+YoY.Summary$LY.GA[is.na(YoY.Summary$LY.GA)] <- 0
+YoY.Summary$LY.Disconnects[is.na(YoY.Summary$LY.Disconnects)] <- 0
+YoY.Summary$LY.Net[is.na(YoY.Summary$LY.Net)] <- 0
+YoY.Summary$YTD.GA[is.na(YoY.Summary$YTD.GA)] <- 0
+YoY.Summary$YTD.Disconnects[is.na(YoY.Summary$YTD.Disconnects)] <- 0
+YoY.Summary$YTD.Net[is.na(YoY.Summary$YTD.Net)] <- 0
+YoY.Summary$YoY.Diff <- YoY.Summary$YTD.Net - YoY.Summary$LY.Net
+  
+#write.csv(YoY.Summary,'YoY.csv')
+
+YoY.update<-merge(x=YoY.Summary,y=YoY,by.x='Store', by.y='Store.Name',all=TRUE)
+
+#DomoR::create(YoY.Summary, name="YoY_Summary", description="YoY totals by Store YTD vs. LY")
+DomoR::replace_ds('b10d3191-2262-4197-afb0-b6d99a97e084', YoY.Summary)
+
+#DomoR::create(YoY.update, name="YoY_update", description="YoY totals by Store YTD vs. LY")
+DomoR::replace_ds('ae941399-e02a-426c-8048-e554fbaff32f', YoY.update)
