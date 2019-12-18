@@ -3,6 +3,7 @@ DomoR::init('x', 'x')
 Net.Activations <- DomoR::fetch("99ef4a65-f48c-473e-96a3-397915c22b50")
 Dates <- DomoR::fetch("852e96f9-9f3b-46bb-9dd8-1c66401e2011")
 YoY <- DomoR::fetch("eb329818-5898-4802-bb4a-87fd441c7e57")
+CurrentMTH <- DomoR::fetch("b0494c9e-198e-49a0-b6de-2a8146652318")
 
 YoY <- YoY %>% 
   filter(YoY$Product_Category == "WIRELESS")
@@ -51,14 +52,22 @@ YoY.Summary$YTD.GA[is.na(YoY.Summary$YTD.GA)] <- 0
 YoY.Summary$YTD.Disconnects[is.na(YoY.Summary$YTD.Disconnects)] <- 0
 YoY.Summary$YTD.Net[is.na(YoY.Summary$YTD.Net)] <- 0
 YoY.Summary$YoY.Diff <- YoY.Summary$YTD.Net - YoY.Summary$LY.Net
+
   
 #write.csv(YoY.Summary,'YoY.csv')
 
 YoY.update<-merge(x=YoY.Summary,y=YoY,by.x='Store', by.y='Store.Name',all=TRUE)
-YoY.update$DSI.District <- toString(YoY.update$DSI.District)
+
+YoY.update$Lastday<-CurrentMTH$Last.Day
 
 #DomoR::create(YoY.Summary, name="YoY_Summary", description="YoY totals by Store YTD vs. LY")
-DomoR::replace_ds('b10d3191-2262-4197-afb0-b6d99a97e084', YoY.Summary)
+#DomoR::replace_ds('b10d3191-2262-4197-afb0-b6d99a97e084', YoY.Summary)
 
-#DomoR::create(YoY.update, name="YoY_update", description="YoY totals by Store YTD vs. LY")
-DomoR::replace_ds('284d2fff-6fad-43de-859a-3b021a910520', YoY.update)
+#DomoR::create(YoY.update, name="YoY_October", description="YoY totals by Store YTD vs. LY, for October")
+#DomoR::replace_ds('0f64a24d-0c7d-4014-bb16-838dd989835e', YoY.update)
+
+#DomoR::create(YoY.update, name="YoY_November", description="YoY totals by Store YTD vs. LY, for October")
+#DomoR::replace_ds('6b0e32da-27bf-4107-babd-ec0e8a33edfe', YoY.update)
+
+#DomoR::create(YoY.update, name="YoY_December", description="YoY totals by Store YTD vs. LY, for December")
+DomoR::replace_ds('31fa27c8-f665-4434-858c-d02e3f6c1ae1', YoY.update)
