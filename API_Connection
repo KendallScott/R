@@ -1,7 +1,7 @@
 library(httr)
 library(XML)
-username <- "x"
-password <- "x"
+username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
 DomoR::init('dsisystemsinc', '85c740882a61e3554c40ee9d2a4c32d34403939814ad403c')
 
 #clients
@@ -44,7 +44,7 @@ DomoR::replace_ds('f91f03c1-9650-49e7-831b-387013a2d656', df)
 
 #Forms
 url  <- "https://api.repsly.com"
-path <- "/v3/export/forms/0"
+path <- "/v3/export/forms/94007127"
 raw.result <- GET(url = url, path=path, authenticate(username,  password, type = "basic"))
 
 this.raw.content <- rawToChar(raw.result$content)
@@ -111,12 +111,11 @@ LastIdFinal <- c(LastIdFinal)
 LastIdFinal <- as.data.frame(LastIdFinal)
 
 DomoR::replace_ds('4374f22d-4735-40de-bf05-7e135d481931', LastIdFinal)
-
-DomoR::replace_ds('e3620ccd-4258-4224-ab1d-1c256774d278', df)
+DomoR::replace_ds('1728502c-9345-4804-b158-7943aa7c6acc', df)
 
 #Visits
 url  <- "https://api.repsly.com"
-path <- "/v3/export/visits/0"
+path <- "/v3/export/visits/4759599714"
 raw.result <- GET(url = url, path=path, authenticate(username,  password, type = "basic"))
 
 this.raw.content <- rawToChar(raw.result$content)
@@ -150,4 +149,5 @@ LastTimeStampFinal <- c(LastTimeStampFinal)
 LastTimeStampFinal <- as.data.frame(LastTimeStampFinal)
 
 DomoR::replace_ds('be9347a6-a1df-41d1-bac3-1f1a2686a9cc', LastTimeStampFinal)
-DomoR::replace_ds('05f96db8-dd56-4f99-9795-bc693f1c3b4d', df)
+DomoR::replace_ds('056c057c-a509-45ea-aec5-29bbd5f40221', df)
+#DomoR::create(df, name="Repsly_Visits")
