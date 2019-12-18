@@ -1,5 +1,5 @@
 library(dplyr)
-DomoR::init('x', 'x')
+DomoR::init('dsisystemsinc', '85c740882a61e3554c40ee9d2a4c32d34403939814ad403c')
 Net.Activations <- DomoR::fetch("99ef4a65-f48c-473e-96a3-397915c22b50")
 Dates <- DomoR::fetch("852e96f9-9f3b-46bb-9dd8-1c66401e2011")
 YoY <- DomoR::fetch("eb329818-5898-4802-bb4a-87fd441c7e57")
