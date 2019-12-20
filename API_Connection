@@ -2,7 +2,7 @@ library(httr)
 library(XML)
 username <- "443FF361-805F-4006-A91C-D7721D232D9C"
 password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
-DomoR::init('dsisystemsinc', '85c740882a61e3554c40ee9d2a4c32d34403939814ad403c')
+DomoR::init('dsisystemsinc', 'fc42f26cc192aa6c3328d6919d2d302146c66027dc081173')
 
 #clients
 url  <- "https://api.repsly.com"
