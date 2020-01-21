@@ -1,9 +1,14 @@
+install.packages("devtools")
+
+library("devtools")
+install_github(repo="domoinc-r/DomoR")
+
 library(httr)
 library(jsonlite)
 library(dplyr)
 library(stringr)
 
-DomoR::init('dsisystemsinc', '85c740882a61e3554c40ee9d2a4c32d34403939814ad403c')
+DomoR::init('dsisystemsinc', '5fefee0804eaa00648bdfdb0149831704f3ca1cc7ecde287')
 username <- "443FF361-805F-4006-A91C-D7721D232D9C"
 password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
 
@@ -38,9 +43,8 @@ LastIdFinal <- as.data.frame(LastIdFinal)
 #DomoR::create(LastIdFinal, name="LastID_Details")
 DomoR::replace_ds('c5d89ba8-3176-4929-82a6-e17524f9bc36', LastIdFinal)
 
+df.NRTraining<- subset(df, Forms.FormName=='National Retail Training')
 
-df.NRTraining<- df %>% 
-  filter(Forms.FormName == "National Retail Training" )
 x <- 1
 df.org <- cbind(df.NRTraining[[26]][[x]], df.NRTraining[[4]][[x]])
 while (x<NROW(df.NRTraining)) {
@@ -48,7 +52,8 @@ while (x<NROW(df.NRTraining)) {
   df2.org <- cbind(df.NRTraining[[26]][[x]], df.NRTraining[[4]][[x]])
   df.org <- rbind(df.org, df2.org)
 }
-df.org <-filter(df.org, df.org$Value != {""})
+na.omit(df.org$Value) 
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -72,8 +77,7 @@ while (x<y) {
 #DomoR::create(QA.update, name="Repsly_NR_Training_Details")
 DomoR::replace_ds('1716c2f8-ac86-47a3-8931-73c340985c56', QA)
 
-df.NSPTraining<- df %>% 
-  filter(Forms.FormName == "NSP Training"| Forms.FormName == "DAP Training" )
+df.NSPTraining<- subset(df, Forms.FormName=='DAP Training')
 
 x <- 1
 df.org <- cbind(df.NSPTraining[[26]][[x]], df.NSPTraining[[4]][[x]])
@@ -82,7 +86,7 @@ while (x<NROW(df.NSPTraining)) {
   df2.org <- cbind(df.NSPTraining[[26]][[x]], df.NSPTraining[[4]][[x]])
   df.org <- rbind(df.org, df2.org)
 }
-df.org <-filter(df.org, df.org$Value != {""})
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -106,8 +110,7 @@ while (x<y) {
 DomoR::replace_ds('15609fb2-ad72-488b-80ad-84e9ec4ea9c4', QA)
 
 #Walmart
-df.Storevisit<- df %>% 
-  filter(Forms.FormName == "Walmart Store Visit Form" )
+df.Storevisit<- subset(df, Forms.FormName=='Walmart Store Visit Form')
 
 x <- 1
 df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
@@ -117,7 +120,8 @@ while (x<NROW(df.Storevisit)) {
   df.org <- rbind(df.org, df2.org)
 }
 
-df.org <-filter(df.org, df.org$Value != {""})
+
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -137,19 +141,12 @@ while (x<y) {
   names(QA2)<-c(colnames)
   QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
 }
-
-store.info  <- DomoR::fetch('dc12c98c-5f34-47fd-b2e0-95a9cc9a9383')
-forms       <- DomoR::fetch('e3620ccd-4258-4224-ab1d-1c256774d278')
-QA.update<-merge(x=forms, y=QA,by.x='FormID', by.y='FormID')
-
-QA.update<-merge(x=store.info, y=QA.update, by.x='Store', by.y='ClientName')
-
 #DomoR::create(QA.update, name="Walmart_store_Visit_details")
 DomoR::replace_ds('10fb15c6-0cd9-41c3-a315-302168d86e9b', QA)
 
 #Best Buy
-df.Storevisit<- df %>% 
-  filter(Forms.FormName == "Best Buy Store Visit Form" )
+df.Storevisit<- subset(df, Forms.FormName=='Best Buy Store Visit Form')
+
 x <- 1
 df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
 while (x<NROW(df.Storevisit)) {
@@ -158,9 +155,9 @@ while (x<NROW(df.Storevisit)) {
   df.org <- rbind(df.org, df2.org)
 }
 
-df.org <-filter(df.org, df.org$Value != {""})
-df.orgnames <- unique(df.org$Field)
 
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.orgnames <- unique(df.org$Field)
 
 x<-1
 y<-NROW(df.orgnames)
@@ -179,16 +176,12 @@ while (x<y) {
   names(QA2)<-c(colnames)
   QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
 }
-
-QA.update<-merge(x=forms, y=QA,by.x='FormID', by.y='FormID')
-QA.update<-merge(x=store.info, y=QA.update, by.x='Store', by.y='ClientName')
-
 #DomoR::create(QA.update, name="Best_Buy_store_Visit_details")
 DomoR::replace_ds('10b59668-842e-41c6-afab-16055fab0cd6', QA)
 
 #Sam's Club
-df.Storevisit<- df %>% 
-  filter(Forms.FormName == "Sam's Club Store Visit Form" )
+df.Storevisit<- subset(df, Forms.FormName=='Sam\'s Club Store Visit Form')
+
 x <- 1
 df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
 while (x<NROW(df.Storevisit)) {
@@ -197,9 +190,9 @@ while (x<NROW(df.Storevisit)) {
   df.org <- rbind(df.org, df2.org)
 }
 
-df.org <-filter(df.org, df.org$Value != {""})
-df.orgnames <- unique(df.org$Field)
 
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.orgnames <- unique(df.org$Field)
 
 x<-1
 y<-NROW(df.orgnames)
@@ -218,16 +211,12 @@ while (x<y) {
   names(QA2)<-c(colnames)
   QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
 }
-
-QA.update<-merge(x=forms, y=QA,by.x='FormID', by.y='FormID')
-QA.update<-merge(x=store.info, y=QA.update, by.x='Store', by.y='ClientName')
-
 #DomoR::create(QA.update, name="Sams_Club_store_Visit_details")
 DomoR::replace_ds('8e82b217-e24c-44cf-a5a5-a8112d1bcfe6', QA)
 
 #Target
-df.Storevisit<- df %>% 
-  filter(Forms.FormName == "Target Store Visit Form" )
+df.Storevisit<- subset(df, Forms.FormName=='Target Store Visit Form')
+
 x <- 1
 df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
 while (x<NROW(df.Storevisit)) {
@@ -236,7 +225,8 @@ while (x<NROW(df.Storevisit)) {
   df.org <- rbind(df.org, df2.org)
 }
 
-df.org <-filter(df.org, df.org$Value != {""})
+
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -256,17 +246,13 @@ while (x<y) {
   names(QA2)<-c(colnames)
   QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
 }
-
-QA.update<-merge(x=forms, y=QA,by.x='FormID', by.y='FormID')
-QA.update<-merge(x=store.info, y=QA.update, by.x='Store', by.y='ClientName')
 
 #DomoR::create(QA.update, name="Target_store_Visit_details")
 DomoR::replace_ds('c5318eb2-32d4-4dd4-a3d5-98d80b172b64', QA)
 
-
 #Wireless Advocates
-df.Storevisit<- df %>% 
-  filter(Forms.FormName == "	Wireless Advocates Visit Form" )
+df.Storevisit<- subset(df, Forms.FormName=='Wireless Advocates Store Visit Form')
+
 x <- 1
 df.org <- cbind(df.Storevisit[[26]][[x]], df.Storevisit[[4]][[x]])
 while (x<NROW(df.Storevisit)) {
@@ -275,7 +261,8 @@ while (x<NROW(df.Storevisit)) {
   df.org <- rbind(df.org, df2.org)
 }
 
-df.org <-filter(df.org, df.org$Value != {""})
+
+df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -295,9 +282,6 @@ while (x<y) {
   names(QA2)<-c(colnames)
   QA<-merge(x=QA,y=QA2,by='FormID',all=TRUE)
 }
-
-QA.update<-merge(x=forms, y=QA,by.x='FormID', by.y='FormID')
-QA.update<-merge(x=store.info, y=QA.update, by.x='Store', by.y='ClientName')
 
 #DomoR::create(QA.update, name="WA_store_Visit_details")
 DomoR::replace_ds('83f82d1f-e733-425d-a360-0e1dc1845347', QA)
