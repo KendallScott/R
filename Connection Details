@@ -1,8 +1,3 @@
-install.packages("devtools")
-
-library("devtools")
-install_github(repo="domoinc-r/DomoR")
-
 library(httr)
 library(jsonlite)
 library(dplyr)
@@ -120,8 +115,9 @@ while (x<NROW(df.Storevisit)) {
   df.org <- rbind(df.org, df2.org)
 }
 
-
 df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.org<- df.org[!(is.na(df.org$Value) | df.org$Value==""), ]
+
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -157,6 +153,7 @@ while (x<NROW(df.Storevisit)) {
 
 
 df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.org<- df.org[!(is.na(df.org$Value) | df.org$Value==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -192,6 +189,7 @@ while (x<NROW(df.Storevisit)) {
 
 
 df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.org<- df.org[!(is.na(df.org$Value) | df.org$Value==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -227,6 +225,7 @@ while (x<NROW(df.Storevisit)) {
 
 
 df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.org<- df.org[!(is.na(df.org$Value) | df.org$Value==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -263,6 +262,7 @@ while (x<NROW(df.Storevisit)) {
 
 
 df.org<- df.org[!(is.na(df.org$Field) | df.org$Field==""), ]
+df.org<- df.org[!(is.na(df.org$Value) | df.org$Value==""), ]
 df.orgnames <- unique(df.org$Field)
 
 x<-1
@@ -285,3 +285,4 @@ while (x<y) {
 
 #DomoR::create(QA.update, name="WA_store_Visit_details")
 DomoR::replace_ds('83f82d1f-e733-425d-a360-0e1dc1845347', QA)
+
