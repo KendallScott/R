@@ -2,7 +2,46 @@ library(httr)
 library(XML)
 username <- "443FF361-805F-4006-A91C-D7721D232D9C"
 password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
-DomoR::init('dsisystemsinc', 'fc42f26cc192aa6c3328d6919d2d302146c66027dc081173')
+DomoR::init('dsisystemsinc', '5fefee0804eaa00648bdfdb0149831704f3ca1cc7ecde287')
+
+#Daily Working Time
+url  <- "https://api.repsly.com"
+path <- "/v3/export/dailyworkingtime/0"
+raw.result <- GET(url = url, path=path, authenticate(username,  password, type = "basic"))
+this.raw.content <- rawToChar(raw.result$content)
+LastID <-gsub(pattern= ".*<LastID>|</LastID>.*", replacement="", this.raw.content)
+
+this.raw.new <-gsub(pattern= "<DailyWorkingTime><DailyWorkingTime>", replacement="<DailyWorkingTime><DailyWorkingTimes>", this.raw.content)
+this.raw.new <-gsub(pattern= "</DailyWorkingTime></DailyWorkingTime>", replacement="</DailyWorkingTimes></DailyWorkingTime>", this.raw.new)
+this.raw.new <-gsub(pattern= "</DailyWorkingTimes>|<DailyWorkingTimes>", replacement="", this.raw.new)
+df <-xmlToDataFrame(this.raw.new)
+
+while (LastID>0) {
+  url  <- "https://api.repsly.com"
+  path <- paste("/v3/export/dailyworkingtime/",LastID)
+  path <-gsub(" ", "", path)
+  raw.result <- GET(url = url, path=path, authenticate(username,  password, type = "basic"))
+  
+  
+  this.raw.content <- rawToChar(raw.result$content)
+  LastID <-gsub(pattern= ".*<LastID>|</LastID>.*", replacement="", this.raw.content)
+  
+  this.raw.new <-gsub(pattern= "<DailyWorkingTime><DailyWorkingTime>", replacement="<DailyWorkingTime><DailyWorkingTimes>", this.raw.content)
+  this.raw.new <-gsub(pattern= "</DailyWorkingTime></DailyWorkingTime>", replacement="</DailyWorkingTimes></DailyWorkingTime>", this.raw.new)
+  this.raw.new <-gsub(pattern= "</DailyWorkingTimes>|<DailyWorkingTimes>", replacement="", this.raw.new)
+  
+  df2 <-xmlToDataFrame(this.raw.new)
+  df <- rbind(df2, df)
+}
+
+library(tidyr)
+df$Date    <- as.Date(df$Date)
+df$DateAndTimeStart    <- as.Date(df$DateAndTimeStart)
+df$DateAndTimeEnd <- as.Date(df$DateAndTimeEnd)
+
+
+#DomoR::create(df, name="Repsly_DailyWorkingTime")
+DomoR::replace_ds('a711a4b4-3fc8-4576-a672-00b354786138', df)
 
 #clients
 url  <- "https://api.repsly.com"
@@ -13,6 +52,9 @@ LastTimeStamp <-gsub(pattern= ".*<LastTimeStamp>|</LastTimeStamp>.*", replacemen
 
 this.raw.content.new <-gsub(pattern= "<MetaCollectionResult>.*</MetaCollectionResult>", replacement="", this.raw.content)
 this.raw.new <-gsub(pattern= "</Clients>|<Clients>", replacement="", this.raw.content.new)
+this.raw.new <-gsub(pattern= "</Field>", replacement=" ///</Field>", this.raw.new)
+this.raw.new <-gsub(pattern= "</Value>", replacement=" ;;</Value>", this.raw.new)
+
 df <-xmlToDataFrame(this.raw.new)
 
 while (LastTimeStamp>0) {
@@ -27,6 +69,9 @@ while (LastTimeStamp>0) {
   
   this.raw.content.new <-gsub(pattern= "<MetaCollectionResult>.*</MetaCollectionResult>", replacement="", this.raw.content)
   this.raw.new <-gsub(pattern= "</Clients>|<Clients>", replacement="", this.raw.content.new)
+  
+  this.raw.new <-gsub(pattern= "</Field>", replacement=" ///</Field>", this.raw.new)
+  this.raw.new <-gsub(pattern= "</Value>", replacement=" ;;</Value>", this.raw.new)
   
   df2 <-xmlToDataFrame(this.raw.new)
   df <- rbind(df2, df)
