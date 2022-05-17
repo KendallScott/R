@@ -1,0 +1,81 @@
+DomoR::init('dsisystemsinc', 'a492040272447dc5a32052acc1dce8e8a969ae8d3779928f')
+username <- "443FF361-805F-4006-A91C-D7721D232D9C"
+password <- "17ADA086-3E22-4566-9650-F9F1D8E54049"
+
+weekly<- DomoR::fetch("c5d7ba9c-54e2-44b3-8f39-346eb2e302c4")
+install.packages("randomForest")
+install.packages("varImp")
+wow=weekly
+
+library(randomForest)
+library(varImp)
+wow = data.frame(   
+  GA=wow$GA,
+  Net=wow$Net,
+  Year=as.factor(wow$Year),
+  Year=scale(wow$TrainingTimesLastYear),
+  FSR = as.factor(wow$FSR),
+  RM=as.factor(wow$RM),
+  Director = scale(wow$Director), 
+  Retailer=as.factor(wow$Retailer),
+  Store.Tags = as.factor(wow$Store.Tags), 
+  ISAM.EDM=scale(wow$ISAM.EDM),
+  Time.Spent=scale(wow$Time.Spent),
+  Visits=scale(wow$Visits)
+)
+#model <- randomForest(MonthlyIncome ~  ., data = wow, importance=TRUE) 
+#importance=importance(model)
+#varImpPlot(model)
+
+#knn model
+
+weekly =weekly %>%filter(Time.group == "Week" & Year==2022 & Net>0) 
+
+wow = data.frame(   
+  Net=weekly$Net,
+  Time.Spent=scale(weekly$Time.Spent),
+  Visits=scale(weekly$Visits),
+  Time.Spent.Max=scale(weekly$Time.Spent.Max), 
+  Time.Spent.Min=scale(weekly$Time.Spent.Min)
+)
+
+install.packages("class")
+install.packages("caret")
+install.packages("e1071")
+
+library(class)
+library(caret)
+library(e1071)
+library(dplyr)
+
+wow <- weekly %>% filter_at(vars(Net,Time.Spent, Visits),all_vars(!is.na(.)))
+
+n <- nrow(wow)
+nsamp <- sample(1:n,round(n*.7)) #for a 70-30 split
+test <- wow[nsamp,]
+train <- wow[-nsamp,]
+
+numks = 30
+masterAcc = matrix(nrow = numks)
+masterSens = matrix(nrow = numks)
+masterSpec = matrix(nrow = numks)
+masterK = matrix(nrow = numks)
+set.seed(1)
+i=3
+for(i in 1:numks)
+{
+  classifications = knn(train[,c(2:5)],test[,c(2:5)],train$Net, prob = TRUE,l = 0, k = i)
+  #results for accuracty, sensitivity, and specificity
+  table(test$Net,classifications)
+  CM = c(table(test$Net,classifications))
+  masterAcc[i] = CM$overall[1]
+  masterSens[i]=CM[["byClass"]][["Sensitivity"]][1]
+  masterSpec[i]=CM[["byClass"]][["Specificity"]][1]
+  masterK[i]=i
+}
+Overall=cbind(masterAcc,masterSens, masterSpec, masterK)
+Overall=as.data.frame(Overall)
+#renaming CM column results
+Overall=rename(Overall, Accuracy=V1, Sensitivity=V2, Specificity=V3,K=V4)
+MeanAcc = colMeans(Overall)
+MeanAcc
