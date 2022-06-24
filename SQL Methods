@@ -1,0 +1,9 @@
+Date
+str_to_date(date_format(`Survey Date`, '%Y-%m-01'), '%Y-%m-%d')
+
+Distance
+3956 * 2 * ASIN(SQRT(
+POWER(SIN((`Latitude 1` - abs(`Latitude 2`)) * pi()/180 / 2),
+2) + COS(`Latitude 1` * pi()/180 ) * COS(abs(`Latitude 2`) *
+pi()/180) * POWER(SIN((`Longitude 1` - `Longitude 2`) *
+pi()/180 / 2), 2) )) 
